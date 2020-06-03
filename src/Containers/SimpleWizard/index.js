@@ -69,7 +69,7 @@ class SimpleWizard extends React.Component {
 	};
 
 	validateEmail = email => {
-		const pattern = /^\w+@[a-zA-Z_]+?\.[a-zA-Z]{2,3}$/;
+		const pattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
 		console.log(email.match(pattern));
 		if(email.match(pattern)) return true;
 		return false;
