@@ -1,0 +1,17 @@
+.UserInfoStyled {
+	border: 2.5px solid #000080;
+	border-radius: 15px;
+	box-shadow: 5px 8px #aaaaaa;
+	padding: 15px;
+	margin: 0 auto;
+	margin-top: 30px;
+	display: inline-block;
+}
+
+.TitleStyled {
+	font-weight: bold;
+}
+
+.errorMessages {
+	color: red;
+}

@@ -5,18 +5,24 @@ import Form from 'react-bootstrap/Form';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import 'bootstrap/dist/css/bootstrap.css';
+import './styles.css';
+import UserInfoContainer from '../UserInfoContainer';
+import { createUser } from '../../sdk';
+
+const initialState = {
+	name: '',
+	age: '',
+	email: '',
+	newsletter: 'daily',
+	errors: [],
+	nextPressed: false,
+	showInfo: false,
+};
 
 class SimpleWizard extends React.Component {
 	constructor(props){
 		super(props);
-		this.state = {
-			name: '',
-			age: '',
-			email: '',
-			newsletter: 'daily',
-			errors: [],
-			nextPressed: false,
-		};
+		this.state = initialState;
 	}
 
 	closeModal = () => {
@@ -25,14 +31,7 @@ class SimpleWizard extends React.Component {
 	}
 
 	clearState = () => {
-		this.setState({
-			name: '',
-			age: '',
-			email: '',
-			newsletter: 'daily',
-			errors: [],
-			nextPressed: false,
-		});
+		this.setState(initialState);
 	}
 
 	setName = userName => this.setState({ name: userName });
@@ -43,23 +42,58 @@ class SimpleWizard extends React.Component {
 
 	setNewsletter = userNewsletter => this.setState({ newsletter: userNewsletter });
 
+	setShowInfo = value => this.setState({ showInfo: value });
+
 	goNextStep = () => {
 		let error = [];
-		if(this.state.name === '') error.push('Faltou o nome!');
-		if(this.state.age === '') error.push('Faltou a idade!');
-		else if(isNaN(this.state.age)) error.push('A idade do usuário precisa ser um número!');
+		if(this.state.name === '') error.push('Falta preencher o nome do usuário!');
+		if(this.state.age === '') error.push('Falta preencher a idade do usuário!');
+		else if(isNaN(this.state.age) || this.state.age < 0) error.push('A idade do usuário precisa ser um número válido!');
 		
 		if (error.length > 0) this.setState({ errors: error });
-		else this.setState({ nextPressed: true })
-	}
+		else this.setState({ errors: [], nextPressed: true })
+	};
 
 	goBack = () => this.setState({ nextPressed: false });
 
+	finish = () => {
+		let error = [];
+		if(this.state.email === '') error.push('Falta preencher o email do usuário!');
+		else if(!this.validateEmail(this.state.email)) error.push('Email inválido!');
+
+		if (error.length > 0) this.setState({ errors: error });
+		else {
+			this.setState({ errors: []});
+			this.saveData();
+		}
+	};
+
+	validateEmail = email => {
+		const pattern = /^\w+@[a-zA-Z_]+?\.[a-zA-Z]{2,3}$/;
+		console.log(email.match(pattern));
+		if(email.match(pattern)) return true;
+		return false;
+	};
+
+	saveData = () => {
+		createUser(this.state)
+			.then(() => this.props.onHide())
+			.catch(() => alert('ERRO! Não foi possível criar nova conta de usuário!'))
+			.finally(() => this.showMessageInfo());
+	};
+
+	showMessageInfo = () => {
+		this.setShowInfo(true);
+	};
+
+
 	render(){
+		if (this.props.show && this.state.showInfo) this.clearState();
 		return (
-			<Modal show={this.props.show} onHide={this.closeModal}>
+			<>
+			<Modal show={this.props.show} onHide={this.closeModal} id="wizardModal">
 				<Modal.Header closeButton>
-          			<Modal.Title>Criar Conta</Modal.Title>
+          			<Modal.Title><span className="TitleStyled">Criar Conta</span></Modal.Title>
         		</Modal.Header>
 
 				<Modal.Body>
@@ -92,8 +126,8 @@ class SimpleWizard extends React.Component {
 							<div>
 								{this.state.errors.length > 0 && (
 									<>
-									<span>Atenção! </span><br/>
-									{this.state.errors.map(error => (<div>{error}</div>))}
+									<span className="errorMessages">Atenção!</span><br/>
+									{this.state.errors.map(error => (<div className="errorMessages">- {error}</div>))}
 									</>
 								)}
 							</div>
@@ -124,6 +158,15 @@ class SimpleWizard extends React.Component {
 									</Col>
 								</Form.Group>
 							</Form>
+
+							<div>
+								{this.state.errors.length > 0 && (
+									<>
+									<span className="errorMessages">Atenção!</span><br/>
+									{this.state.errors.map(error => (<div className="errorMessages">- {error}</div>))}
+									</>
+								)}
+							</div>
 						</>
 					)}
 					
@@ -135,11 +178,23 @@ class SimpleWizard extends React.Component {
 					) : (
 						<>
 							<Button variant="outline-primary" onClick={() => this.goBack()}>Voltar</Button>
-							<Button variant="outline-primary">Finalizar</Button>
+							<Button variant="outline-primary" onClick={() => this.finish()}>Finalizar</Button>
 						</>
 					)}
 				</Modal.Footer>
 			</Modal>
+
+			{this.state.showInfo && (
+				<div className="UserInfoStyled">
+					<UserInfoContainer
+						onHide={this.clearState}
+						name={this.state.name}
+						age={this.state.age} 
+						email={this.state.email} 
+						newsletter={this.state.newsletter} />
+				</div>
+			)}
+			</>
 		);
 	}
 }

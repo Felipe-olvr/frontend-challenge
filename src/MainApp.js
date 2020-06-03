@@ -19,9 +19,15 @@ class MainApp extends React.Component {
 	render(){
 		return (
 			<div className="MainStyle">
-				<h2>Frontend Challenge!</h2>
-				<Button variant="outline-primary" onClick={() => this.onOpenWizard()}>Primary</Button>
-				<SimpleWizard show={this.state.showWizard} onHide={this.onCloseWizard} />
+				<h2 className="TitleStyled">Frontend Challenge!</h2>
+				<div>
+					<div className="ButtonStyled">
+						<Button variant="outline-primary" onClick={() => this.onOpenWizard()}>Criar Conta</Button>
+					</div>
+					<div>
+						<SimpleWizard show={this.state.showWizard} onHide={this.onCloseWizard} />
+					</div>
+				</div>
 			</div>
 		);
 	}
